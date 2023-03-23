@@ -3,9 +3,9 @@ const { SECRET_KEY } = require("../config");
 
 /** return signed JWT from user data. */
 
-function createToken(user) {
+function createToken(user) { //NOTES.md #002
   console.assert(user.isAdmin !== undefined,
-      "createToken passed user without isAdmin property");
+    "createToken passed user without isAdmin property");
 
   let payload = {
     username: user.username,
