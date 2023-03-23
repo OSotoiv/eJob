@@ -10,7 +10,9 @@ const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
+const companyFilterSchema = require("../schemas/companyFilter.json")
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const { json } = require("body-parser");
 
 const router = new express.Router();
 
@@ -52,6 +54,11 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
+    const validator = jsonschema.validate(req.query, companyFilterSchema);
+    if (validator.valid) {
+      const companies = await Company.findBy(req.query);
+      return res.json({ companies });
+    }
     const companies = await Company.findAll();
     return res.json({ companies });
   } catch (err) {

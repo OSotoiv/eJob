@@ -17,16 +17,44 @@ const { BadRequestError } = require("../expressError");
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
-
+  const cols = []
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
-  const cols = keys.map((colName, idx) =>
-    `"${jsToSql[colName] || colName}"=$${idx + 1}`,
-  );
+  keys.forEach((colName, idx) => {
+    if (!colName) return;
+    cols.push(`"${jsToSql[colName] || colName}"=$${idx + 1}`)
+  });
 
   return {
     setCols: cols.join(", "),
-    values: Object.values(dataToUpdate),
+    values: Object.values(dataToUpdate).filter(val => val !== undefined),
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+
+
+// find a way to parse the int on the way in so you dont have to do it here
+function sqlForFiltering(dataToFilterby, jsToSql) {
+  // Construct the WHERE clause based on the input parameters
+  const keys = Object.keys(dataToFilterby);
+  if (keys.length === 0) throw new BadRequestError("No Query");//probably out of reach
+
+  const whereCol = keys.map((colName, idx) =>
+    `"${jsToSql[colName] || colName}"=$${idx + 1}`,
+  );
+  return {
+    whereClause: whereCol.join(" AND "),
+    queryValues: Object.values(dataToFilterby)
+  }
+
+  // `SELECT handle,
+  // name,
+  // description,
+  // num_employees AS "numEmployees",
+  // logo_url AS "logoUrl"
+  // FROM companies
+  // WHERE name = $1 AND num_employees > $2
+  // ORDER BY name`
+}
+
+
+module.exports = { sqlForPartialUpdate, sqlForFiltering };
