@@ -42,8 +42,18 @@ function ensureLoggedIn(req, res, next) {
   }
 }
 
-
+function isAdmin(req, res, next) {
+  try {
+    if (res.locals.user.isAdmin) {
+      return next();
+    }
+    throw new UnauthorizedError("You are not an Admin");
+  } catch (err) {
+    return next(err);
+  }
+}
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  isAdmin
 };
