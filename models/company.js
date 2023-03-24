@@ -60,15 +60,34 @@ class Company {
            ORDER BY name`);
     return companiesRes.rows;
   }
-  static async findBy({ name, minEmployees, maxEmployees }) {
-    sqlForFiltering(
-      { name, minEmployees, maxEmployees },
-      {
-        minEmployees: "num_Employees"
-      })
-    const companiesRes = await db.query(
 
-    )
+  static async findBy(data) {
+    if (data.minEmployees && data.maxEmployees) {
+      if (parseInt(data.minEmployees) > parseInt(data.maxEmployees)) {
+        throw new BadRequestError('minEmployees and not be greater than maxEmployees')
+      }
+    }
+    const { whereClause, queryValues } = sqlForFiltering(
+      data,
+      {
+        name: { sql: "LOWER(name)", sym: 'LIKE' },
+        minEmployees: { sql: "num_employees", sym: '>' },
+        maxEmployees: { sql: "num_employees", sym: '<' }
+      })
+    console.log(whereClause)
+    console.log(queryValues)
+    const companiesRes = await db.query(
+      `SELECT handle,
+        name,
+        description,
+        num_employees AS "numEmployees",
+        logo_url AS "logoUrl"
+        FROM companies
+        WHERE ${whereClause}
+        ORDER BY name`,
+      [...queryValues]);
+    if (!companiesRes.rows[0]) { return 'No Companies Found' }
+    return companiesRes.rows;
   }
   /** Given a company handle, return data about company.
    *

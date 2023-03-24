@@ -17,44 +17,53 @@ const { BadRequestError } = require("../expressError");
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
-  const cols = []
+
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
-  keys.forEach((colName, idx) => {
-    if (!colName) return;
-    cols.push(`"${jsToSql[colName] || colName}"=$${idx + 1}`)
-  });
+  const cols = keys.map((colName, idx) =>
+    `"${jsToSql[colName] || colName}"=$${idx + 1}`
+  );
 
   return {
     setCols: cols.join(", "),
-    values: Object.values(dataToUpdate).filter(val => val !== undefined),
+    values: Object.values(dataToUpdate)
   };
 }
 
+/**
+ * @param {object} dataToFilterby - An object containing the data to update.
+ * The keys are the column names, and the values are the new values for those columns.
+ * @param {object} jsToSql - An object mapping JavaScript object keys to their corresponding column names in the SQL table.
+ * keys in a JavaScript object may have different naming conventions or formats than the column names in the SQL table, so we need to 
+ * change them for the sql query. Also on each object is the symbol used to evaluate the col and data val (<,>,=)
+ * @returns {object} An object with two properties: "whereClause", which is a string containing the SQL WHERE clause for the query,
+ * and "queryValues", which is an array of the values to query by in the table.
+ * @throws {BadRequestError} Throws an error if the "dataToUpdate" object is empty.
+ */
 
-
-// find a way to parse the int on the way in so you dont have to do it here
 function sqlForFiltering(dataToFilterby, jsToSql) {
+  if (Object.keys(dataToFilterby).length === 0) throw new BadRequestError("No Data To Filter By");
   // Construct the WHERE clause based on the input parameters
-  const keys = Object.keys(dataToFilterby);
-  if (keys.length === 0) throw new BadRequestError("No Query");//probably out of reach
-
-  const whereCol = keys.map((colName, idx) =>
-    `"${jsToSql[colName] || colName}"=$${idx + 1}`,
-  );
-  return {
-    whereClause: whereCol.join(" AND "),
-    queryValues: Object.values(dataToFilterby)
+  // const keys = Object.keys(dataToFilterby);
+  // if (keys.length === 0) throw new BadRequestError("No Query");
+  // const whereCol = keys.map((colName, idx) => {
+  //   const symbol = jsToSql[colName] ? jsToSql[colName].sym : "=";
+  //   const col = jsToSql[colName] ? jsToSql[colName].sql : colName
+  //   return `${col} ${symbol} $${idx + 1}`
+  // });
+  const whereCol = [];
+  const queryValues = [];
+  for (const [idx, [colName, val]] of Object.entries(dataToFilterby).entries()) {
+    const symbol = jsToSql[colName] ? jsToSql[colName].sym : "=";
+    const col = jsToSql[colName] ? jsToSql[colName].sql : colName;
+    whereCol.push(`${col} ${symbol} $${idx + 1}`);
+    queryValues.push(symbol === 'LIKE' ? `%${val}%` : val);
   }
 
-  // `SELECT handle,
-  // name,
-  // description,
-  // num_employees AS "numEmployees",
-  // logo_url AS "logoUrl"
-  // FROM companies
-  // WHERE name = $1 AND num_employees > $2
-  // ORDER BY name`
+  return {
+    whereClause: whereCol.join(" AND "),
+    queryValues: queryValues
+  }
 }
 
-
+// Object.values(dataToFilterby)
 module.exports = { sqlForPartialUpdate, sqlForFiltering };

@@ -51,14 +51,21 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  *
  * Authorization required: none
  */
-
 router.get("/", async function (req, res, next) {
   try {
-    const validator = jsonschema.validate(req.query, companyFilterSchema);
-    if (validator.valid) {
+    if (Object.keys(req.query).length > 0) {
+      const validator = jsonschema.validate(req.query, companyFilterSchema);
+      if (!validator.valid) { return next() }
+
       const companies = await Company.findBy(req.query);
       return res.json({ companies });
-    }
+    } return next()
+  } catch (err) {
+    return next(err);
+  }
+})
+router.get("/", async function (req, res, next) {
+  try {
     const companies = await Company.findAll();
     return res.json({ companies });
   } catch (err) {
