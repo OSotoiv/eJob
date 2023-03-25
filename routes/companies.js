@@ -98,7 +98,7 @@ router.get("/:handle", async function (req, res, next) {
  *
  * Returns { handle, name, description, numEmployees, logo_url }
  *
- * Authorization required: login
+ * Authorization required: login with is_admin = true
  */
 
 router.patch("/:handle", ensureLoggedIn, isAdmin, async function (req, res, next) {
@@ -118,7 +118,7 @@ router.patch("/:handle", ensureLoggedIn, isAdmin, async function (req, res, next
 
 /** DELETE /[handle]  =>  { deleted: handle }
  *
- * Authorization: login
+ * Authorization: login with is_admin = true
  */
 
 router.delete("/:handle", ensureLoggedIn, isAdmin, async function (req, res, next) {

@@ -117,6 +117,60 @@ describe("GET /companies", function () {
   });
 });
 
+
+/************************************** GET /companies?... with query (name, minEmployees, maxEmployees) */
+describe("GET /companies with query", function () {
+  test("ok for anon", async function () {
+    const resp = await request(app).get("/companies?name=c&minEmployees=2");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c3",
+            name: "C3",
+            description: "Desc3",
+            numEmployees: 3,
+            logoUrl: "http://c3.img",
+          }
+        ],
+    });
+  });
+  test("defaults to gets all with invalid query", async function () {
+    const resp = await request(app).get("/companies?names=c&minEmployees=2");
+    expect(resp.body).toEqual({
+      companies:
+        [
+          {
+            handle: "c1",
+            name: "C1",
+            description: "Desc1",
+            numEmployees: 1,
+            logoUrl: "http://c1.img",
+          },
+          {
+            handle: "c2",
+            name: "C2",
+            description: "Desc2",
+            numEmployees: 2,
+            logoUrl: "http://c2.img",
+          },
+          {
+            handle: "c3",
+            name: "C3",
+            description: "Desc3",
+            numEmployees: 3,
+            logoUrl: "http://c3.img",
+          },
+        ],
+    });
+  })
+  test("failes with invalid minEmployees > maxEmployees", async function () {
+    const resp = await request(app).get("/companies?name=c&minEmployees=2&maxEmployees=1");
+    expect(resp.statusCode).toEqual(400);
+    expect(resp.body.error.message).toBe('minEmployees and not be greater than maxEmployees');
+  })
+});
+
 /************************************** GET /companies/:handle */
 
 describe("GET /companies/:handle", function () {

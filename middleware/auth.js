@@ -41,6 +41,21 @@ function ensureLoggedIn(req, res, next) {
     return next(err);
   }
 }
+//you are the user and you are logged in
+function isUserOrAdmin(req, res, next) {
+  try {
+    if (res.locals.user.username === req.params.username) {
+      return next();
+    } else {
+      //check if you are admin status
+      return isAdmin(req, res, next);
+    }
+    return next({ status: 401, message: "Unauthorized" });
+  } catch (err) {
+    // errors would happen here if we made a request and req.locals.user is undefined
+    return next({ status: 401, message: "Unauthorized Caught" });
+  }
+}
 
 function isAdmin(req, res, next) {
   try {
@@ -55,5 +70,6 @@ function isAdmin(req, res, next) {
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  isAdmin
+  isAdmin,
+  isUserOrAdmin
 };

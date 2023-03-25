@@ -74,8 +74,6 @@ class Company {
         minEmployees: { sql: "num_employees", sym: '>' },
         maxEmployees: { sql: "num_employees", sym: '<' }
       })
-    console.log(whereClause)
-    console.log(queryValues)
     const companiesRes = await db.query(
       `SELECT handle,
         name,
