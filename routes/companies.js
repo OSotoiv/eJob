@@ -63,7 +63,7 @@ router.get("/", async function (req, res, next) {
   } catch (err) {
     return next(err);
   }
-})
+});
 router.get("/", async function (req, res, next) {
   try {
     const companies = await Company.findAll();

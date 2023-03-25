@@ -56,7 +56,7 @@ function sqlForFiltering(dataToFilterby, jsToSql) {
     const symbol = jsToSql[colName] ? jsToSql[colName].sym : "=";
     const col = jsToSql[colName] ? jsToSql[colName].sql : colName;
     whereCol.push(`${col} ${symbol} $${idx + 1}`);
-    queryValues.push(symbol === 'LIKE' ? `%${val}%` : val);
+    queryValues.push(symbol === 'LIKE' ? `%${val}%` : jsToSql[colName].val !== undefined ? jsToSql[colName].val : val);
   }
 
   return {

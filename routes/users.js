@@ -48,7 +48,7 @@ router.post("/", ensureLoggedIn, isAdmin, async function (req, res, next) {
  *
  * Returns list of all users.
  *
- * Authorization required: login
+ * Authorization required: login with is_admin = true
  **/
 
 router.get("/", ensureLoggedIn, isAdmin, async function (req, res, next) {
@@ -65,7 +65,7 @@ router.get("/", ensureLoggedIn, isAdmin, async function (req, res, next) {
  *
  * Returns { username, firstName, lastName, isAdmin }
  *
- * Authorization required: login
+ * Authorization required: login as same users as params or with is_admin = true
  **/
 
 router.get("/:username", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {
@@ -85,7 +85,7 @@ router.get("/:username", ensureLoggedIn, isUserOrAdmin, async function (req, res
  *
  * Returns { username, firstName, lastName, email, isAdmin }
  *
- * Authorization required: login
+ * Authorization required: login as same users as params or with is_admin = true
  **/
 
 router.patch("/:username", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {
@@ -106,7 +106,7 @@ router.patch("/:username", ensureLoggedIn, isUserOrAdmin, async function (req, r
 
 /** DELETE /[username]  =>  { deleted: username }
  *
- * Authorization required: login
+ * Authorization required: login as same users as params or with is_admin = true
  **/
 
 router.delete("/:username", ensureLoggedIn, isUserOrAdmin, async function (req, res, next) {

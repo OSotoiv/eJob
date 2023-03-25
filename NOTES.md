@@ -49,3 +49,24 @@ console.assert(x === 10, "x is not equal to 10");
 ### #003
     Our User model never returns a User instance. As in the case with User.register, It returns an object with user credentials.
     
+
+### Part Four: JOBS
+#### Our database uses the NUMERIC field type. Do some research on why we chose this, rather than a FLOAT type. Discover what the pg library returns when that field type is queried, and form a theory on why.
+
+
+    The NUMERIC data type is often used for storing decimal values with a high degree of precision and accuracy. In the case of the jobs table, the equity column is defined as NUMERIC with a CHECK constraint that ensures the equity value is less than or equal to 1.0. This suggests that the equity value is being stored as a decimal value between 0 and 1, which is a common way to represent equity percentages in finance and accounting.
+
+    Using the NUMERIC data type allows for precise and accurate storage of decimal values, which is important for financial calculations and reporting. It ensures that the equity values are stored and manipulated accurately and consistently, without any loss of precision due to rounding errors or other issues that can arise when using other data types, such as FLOAT or DOUBLE.
+
+    Overall, the use of the NUMERIC data type for the equity column in the jobs table is a good choice, as it provides a high degree of precision and accuracy for storing and manipulating equity values, which is important for financial and accounting purposes.
+    FLOAT is a data type that can be used to store decimal numbers with a certain degree of precision. However, FLOAT has some limitations that make it less suitable for storing monetary values, such as equity percentages.
+
+    One major issue with FLOAT is that it can suffer from rounding errors due to the way that it stores numbers. This can lead to inconsistencies in financial calculations and reporting, which can be a serious problem in accounting and finance applications.
+
+    In contrast, the NUMERIC data type is designed specifically for storing decimal numbers with a high degree of precision and accuracy, without the risk of rounding errors or other issues. This makes it a better choice for storing monetary values like equity percentages, which require a high degree of accuracy and consistency in financial calculations and reporting.
+
+    Overall, while FLOAT may be suitable for some applications that do not require a high degree of precision or consistency in financial calculations, the NUMERIC data type is a better choice for storing monetary values like equity percentages, which require a high degree of precision and consistency in financial reporting and analysis.
+
+#### PG and NUMERIC data type
+    When using pg, you can interact with NUMERIC columns in the same way that you would interact with other numeric columns, such as INTEGER or FLOAT.
+    One thing to note is that NUMERIC values in PostgreSQL can have a high degree of precision and can be represented using a large number of digits. This means that NUMERIC values can take up more space in the database and may require more processing power to manipulate than other numeric data types.
