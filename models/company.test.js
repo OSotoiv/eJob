@@ -68,6 +68,7 @@ describe("findAll", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobCount: "1"
       },
       {
         handle: "c2",
@@ -75,6 +76,7 @@ describe("findAll", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobCount: "1"
       },
       {
         handle: "c3",
@@ -82,6 +84,7 @@ describe("findAll", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
+        jobCount: "1"
       },
     ]);
   });
@@ -100,6 +103,7 @@ describe("findBy", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobCount: "1"
       },
       {
         handle: "c2",
@@ -107,6 +111,7 @@ describe("findBy", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobCount: "1"
       },
       {
         handle: "c3",
@@ -114,6 +119,7 @@ describe("findBy", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
+        jobCount: "1"
       },
     ]);
 
@@ -127,6 +133,7 @@ describe("findBy", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobCount: "1"
       }
     ]);
     // nameLike (will find case-insensitive, partial matches)
@@ -139,6 +146,7 @@ describe("findBy", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobCount: "1"
       },
       {
         handle: "c2",
@@ -146,6 +154,7 @@ describe("findBy", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobCount: "1"
       },
       {
         handle: "c3",
@@ -153,6 +162,7 @@ describe("findBy", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
+        jobCount: "1"
       },
     ]);
   });
@@ -166,6 +176,7 @@ describe("findBy", function () {
         description: "Desc3",
         numEmployees: 3,
         logoUrl: "http://c3.img",
+        jobCount: "1"
       }
     ]);
   });
@@ -179,6 +190,7 @@ describe("findBy", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobCount: "1"
       }
     ]);
   })
@@ -205,6 +217,10 @@ describe("get", function () {
       description: "Desc1",
       numEmployees: 1,
       logoUrl: "http://c1.img",
+      jobs: [expect.objectContaining({
+        id: expect.any(Number),
+        title: expect.any(String)
+      })]
     });
   });
 
@@ -234,7 +250,7 @@ describe("update", function () {
       handle: "c1",
       ...updateData,
     });
-
+    //manually check for update
     const result = await db.query(
       `SELECT handle, name, description, num_employees, logo_url
            FROM companies
@@ -297,11 +313,18 @@ describe("update", function () {
 /************************************** remove */
 
 describe("remove", function () {
-  test("works", async function () {
+  test("works and cascade deletes jobs", async function () {
+    const jobExist = await db.query(`SELECT id FROM jobs WHERE jobs.company_handle = $1`, ['c1']);
+    expect(jobExist.rows[0]).toBeTruthy()
+
     await Company.remove("c1");
     const res = await db.query(
       "SELECT handle FROM companies WHERE handle='c1'");
     expect(res.rows.length).toEqual(0);
+
+    //job cascade delete
+    const jobNotExist = await db.query(`SELECT id FROM jobs WHERE jobs.company_handle = $1`, ['c1']);
+    expect(jobNotExist.rows[0]).toBeFalsy()
   });
 
   test("not found if no such company", async function () {

@@ -53,12 +53,15 @@ class Company {
   static async findAll() {
     const companiesRes = await db.query(
       `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           ORDER BY name`);
+        name,
+        description,
+        num_employees AS "numEmployees",
+        logo_url AS "logoUrl",
+        COUNT(jobs.id) AS "jobCount"
+        FROM companies
+        LEFT JOIN jobs ON companies.handle = jobs.company_handle
+        GROUP BY companies.handle
+        ORDER BY companies.name`);
     return companiesRes.rows;
   }
 
@@ -80,9 +83,12 @@ class Company {
         name,
         description,
         num_employees AS "numEmployees",
-        logo_url AS "logoUrl"
+        logo_url AS "logoUrl",
+        COUNT(jobs.id) AS "jobCount"
         FROM companies
+        LEFT JOIN jobs ON companies.handle = jobs.company_handle
         WHERE ${whereClause}
+        GROUP BY companies.handle
         ORDER BY name`,
       [...queryValues]);
     if (!companiesRes.rows[0]) { return 'No Companies Found' }
@@ -99,12 +105,15 @@ class Company {
   static async get(handle) {
     const companyRes = await db.query(
       `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
-           WHERE handle = $1`,
+        name,
+        description,
+        num_employees AS "numEmployees",
+        logo_url AS "logoUrl",
+        json_agg(json_build_object('id',jobs.id,'title',jobs.title)) AS jobs
+        FROM companies
+        LEFT JOIN jobs ON jobs.company_handle = companies.handle
+        WHERE handle = $1
+        GROUP BY companies.handle;`,
       [handle]);
 
     const company = companyRes.rows[0];

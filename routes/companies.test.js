@@ -86,6 +86,7 @@ describe("GET /companies", function () {
             description: "Desc1",
             numEmployees: 1,
             logoUrl: "http://c1.img",
+            jobCount: "1"
           },
           {
             handle: "c2",
@@ -93,6 +94,7 @@ describe("GET /companies", function () {
             description: "Desc2",
             numEmployees: 2,
             logoUrl: "http://c2.img",
+            jobCount: "1"
           },
           {
             handle: "c3",
@@ -100,6 +102,7 @@ describe("GET /companies", function () {
             description: "Desc3",
             numEmployees: 3,
             logoUrl: "http://c3.img",
+            jobCount: "1"
           },
         ],
     });
@@ -131,6 +134,7 @@ describe("GET /companies with query", function () {
             description: "Desc3",
             numEmployees: 3,
             logoUrl: "http://c3.img",
+            jobCount: "1"
           }
         ],
     });
@@ -146,6 +150,7 @@ describe("GET /companies with query", function () {
             description: "Desc1",
             numEmployees: 1,
             logoUrl: "http://c1.img",
+            jobCount: "1"
           },
           {
             handle: "c2",
@@ -153,6 +158,7 @@ describe("GET /companies with query", function () {
             description: "Desc2",
             numEmployees: 2,
             logoUrl: "http://c2.img",
+            jobCount: "1"
           },
           {
             handle: "c3",
@@ -160,6 +166,7 @@ describe("GET /companies with query", function () {
             description: "Desc3",
             numEmployees: 3,
             logoUrl: "http://c3.img",
+            jobCount: "1"
           },
         ],
     });
@@ -183,6 +190,10 @@ describe("GET /companies/:handle", function () {
         description: "Desc1",
         numEmployees: 1,
         logoUrl: "http://c1.img",
+        jobs: [expect.objectContaining({
+          id: expect.any(Number),
+          title: expect.any(String)
+        })]
       },
     });
   });
@@ -196,6 +207,10 @@ describe("GET /companies/:handle", function () {
         description: "Desc2",
         numEmployees: 2,
         logoUrl: "http://c2.img",
+        jobs: [expect.objectContaining({
+          id: expect.any(Number),
+          title: expect.any(String)
+        })]
       },
     });
   });
