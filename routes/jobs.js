@@ -69,12 +69,10 @@ router.get("/:id", async function (req, res, next) {
 router.patch("/:id", ensureLoggedIn, isAdmin, async function (req, res, next) {
     try {
         const validator = jsonschema.validate(req.body, jobUpdateSchema);
-        console.dir(validator)
         if (!validator.valid) {
             const errs = validator.errors.map(e => e.stack);
             throw new BadRequestError(errs);
         }
-
         const job = await Job.update(req.params.id, req.body);
         return res.json({ job });
     } catch (err) {

@@ -100,7 +100,6 @@ const u1Token = createToken({ username: "u1", isAdmin: true });
 const u2Token = createToken({ username: "u2", isAdmin: false });
 const u3Token = createToken({ username: "u3", isAdmin: false });
 
-
 module.exports = {
   commonBeforeAll,
   commonBeforeEach,

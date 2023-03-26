@@ -16,6 +16,10 @@ class Job {
  * Throws BadRequestError if company handle doesnt exist.
  * */
     static async create({ title, salary, equity, companyHandle }) {
+        //check company handle is valid
+        const isCompany = await db.query(`SELECT name FROM companies WHERE handle = $1`, [companyHandle]);
+        if (!isCompany.rows[0]) throw new BadRequestError(`Company Handle ${companyHandle} does not exist.`);
+
         const result = await db.query(
             `INSERT INTO jobs
                (title, salary, equity, company_handle)
@@ -38,8 +42,6 @@ class Job {
                     val: data.hasEquity === "false" ? ['0', null] : '0'
                 }
             })
-        console.log(whereClause);
-        console.log(queryValues);
         const jobsRes = await db.query(
             `SELECT
             id,
@@ -99,14 +101,14 @@ class Job {
         const result = await db.query(querySql, [...values, id]);
         const company = result.rows[0];
 
-        if (!company) throw new NotFoundError(`No company: ${handle}`);
+        if (!company) throw new NotFoundError(`No Job Found with ID: ${id}`);
 
         return company;
     }
     static async remove(id) {
         const result = await db.query(`DELETE FROM jobs WHERE id = $1 RETURNING id`, [id]);
         const job = result.rows[0];
-        if (!job) throw new NotFoundError(`No company: ${id}`);
+        if (!job) throw new NotFoundError(`No Job Found with ID: ${id}`);
     }
 }
 
