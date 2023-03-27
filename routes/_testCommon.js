@@ -13,6 +13,8 @@ async function commonBeforeAll() {
   await db.query("DELETE FROM companies");
   //
   await db.query("DELETE FROM jobs")
+  //
+  await db.query("DELETE FROM applications")
 
   await Company.create(
     {
@@ -81,6 +83,7 @@ async function commonBeforeAll() {
     equity: 1,
     companyHandle: "c3"
   })
+
 }
 
 async function commonBeforeEach() {

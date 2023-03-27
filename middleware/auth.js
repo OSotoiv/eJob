@@ -36,6 +36,7 @@ function authenticateJWT(req, res, next) { // see NOTES.md 001
 function ensureLoggedIn(req, res, next) {
   try {
     if (!res.locals.user) throw new UnauthorizedError();
+    //should probably check if the user is still valid in the database here
     return next();
   } catch (err) {
     return next(err);

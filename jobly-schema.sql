@@ -24,11 +24,22 @@ CREATE TABLE jobs (
   company_handle VARCHAR(25) NOT NULL
     REFERENCES companies ON DELETE CASCADE
 );
+CREATE TYPE technologies AS ENUM ('Python', 'JavaScript');
+
+CREATE TABLE jobs_technologies (
+  job_id INTEGER
+    REFERENCES jobs ON DELETE CASCADE,
+  req_skills technologies,
+  PRIMARY KEY (job_id, req_skills)
+);
+
+CREATE TYPE application_status AS ENUM ('interested', 'applied', 'accepted', 'rejected');
 
 CREATE TABLE applications (
   username VARCHAR(25)
     REFERENCES users ON DELETE CASCADE,
   job_id INTEGER
     REFERENCES jobs ON DELETE CASCADE,
+  status application_status DEFAULT 'applied',
   PRIMARY KEY (username, job_id)
 );

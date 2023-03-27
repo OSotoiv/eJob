@@ -132,7 +132,7 @@ describe("findAll", function () {
 /************************************** get */
 
 describe("get", function () {
-  test("works", async function () {
+  test("works user with no jobs", async function () {
     let user = await User.get("u1");
     expect(user).toEqual({
       username: "u1",
@@ -140,6 +140,34 @@ describe("get", function () {
       lastName: "U1L",
       email: "u1@email.com",
       isAdmin: false,
+      applications: [
+        {
+          id: null,
+          title: null,
+          status: null,
+        }
+      ]
+    });
+  });
+  test("works user with job applications", async function () {
+    const { rows } = await db.query(`SELECT id FROM jobs WHERE title = 'job1';`)
+    const { id } = rows[0];
+    await User.apply('u1', id);
+
+    let user = await User.get("u1");
+    expect(user).toEqual({
+      username: "u1",
+      firstName: "U1F",
+      lastName: "U1L",
+      email: "u1@email.com",
+      isAdmin: false,
+      applications: [
+        {
+          id: id,
+          title: "job1",
+          status: "applied",
+        }
+      ]
     });
   });
 
@@ -215,7 +243,7 @@ describe("remove", function () {
   test("works", async function () {
     await User.remove("u1");
     const res = await db.query(
-        "SELECT * FROM users WHERE username='u1'");
+      "SELECT * FROM users WHERE username='u1'");
     expect(res.rows.length).toEqual(0);
   });
 
@@ -228,3 +256,42 @@ describe("remove", function () {
     }
   });
 });
+
+/************************************* apply */
+describe("User.apply(username, jobId)", function () {
+  test("works for valid username and jobId", async function () {
+    const { rows: jobIDs } = await db.query(`SELECT id, company_handle FROM jobs;`)
+
+    for (const { id, company_handle } of jobIDs) {
+      const application = await User.apply("u1", id);
+      expect(application).toEqual({
+        job_id: id,
+        companyHandle: company_handle
+      })
+    }
+  });
+  test("errors if for duplicate application", async function () {
+    const { rows } = await db.query(`SELECT id, company_handle FROM jobs LIMIT 1;`);
+    const { id: jobId } = rows[0];
+
+    try {
+      await User.apply("u1", jobId);
+      await User.apply("u1", jobId);
+      fail()
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+      expect(err.message).toBe(`You already applied for job ${jobId}`)
+    }
+  });
+  test("erros if invalid jobId", async function () {
+    {
+      try {
+        await User.apply("u1", "0");
+        fail()
+      } catch (err) {
+        expect(err instanceof NotFoundError).toBeTruthy();
+        expect(err.message).toBe(`No Job Found with ID: 0`)
+      }
+    }
+  })
+})

@@ -188,6 +188,10 @@ describe("GET /users", function () {
 
 describe("GET /users/:username", function () {
   test("works for logged in as same user", async function () {
+    const { rows } = await db.query(`SELECT id FROM jobs WHERE title = 'job1';`)
+    const { id } = rows[0];
+    await User.apply('u2', id);
+
     const resp = await request(app)
       .get(`/users/u2`)
       .set("authorization", `Bearer ${u2Token}`);
@@ -198,10 +202,19 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        applications: [{
+          id: expect.any(Number),
+          title: "job1",
+          status: "applied"
+        }]
       },
     });
   });
   test("works for logged in as Admin searching any username", async function () {
+    const { rows } = await db.query(`SELECT id FROM jobs WHERE title = 'job1';`)
+    const { id } = rows[0];
+    await User.apply('u2', id);
+
     const resp = await request(app)
       .get(`/users/u2`)
       .set("authorization", `Bearer ${u1Token}`);
@@ -212,6 +225,11 @@ describe("GET /users/:username", function () {
         lastName: "U2L",
         email: "user2@user.com",
         isAdmin: false,
+        applications: [{
+          id: expect.any(Number),
+          title: "job1",
+          status: "applied"
+        }]
       },
     });
   });
@@ -395,4 +413,71 @@ describe("DELETE /users/:username", function () {
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(404);
   });
+});
+
+/************************************************ POST users/:username/jobs/:id */
+describe("POST users/:username/jobs/:id", function () {
+  test("works for valid user", async function () {
+    const { rows: jobIDs } = await db.query(`SELECT id, company_handle FROM jobs;`)
+    for (const { id, company_handle } of jobIDs) {
+      const resp = await request(app)
+        .post(`/users/u2/jobs/${id}`)
+        .set("authorization", `Bearer ${u2Token}`);
+      expect(resp.statusCode).toBe(201)
+      expect(resp.body).toEqual({
+        applied: {
+          job_id: id,
+          companyHandle: company_handle
+        }
+      })
+    }
+  })
+  test("works for Admin Token applying any user to job", async function () {
+    const { rows: jobIDs } = await db.query(`SELECT id, company_handle FROM jobs;`)
+    for (const { id, company_handle } of jobIDs) {
+      const resp = await request(app)
+        .post(`/users/u2/jobs/${id}`)
+        .set("authorization", `Bearer ${u1Token}`);
+      expect(resp.statusCode).toBe(201)
+      expect(resp.body).toEqual({
+        applied: {
+          job_id: id,
+          companyHandle: company_handle
+        }
+      })
+    }
+  })
+  test("unauth for anon", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/401`)
+    expect(resp.statusCode).toBe(401);
+  })
+  test("not found if Job doesnt exist Admin user", async function () {
+    const resp = await request(app)
+      .post(`/users/u1/jobs/0`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toBe(404)
+    //json schema should error if job is not a number
+    const resp2 = await request(app)
+      .post(`/users/u1/jobs/1o`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp2.statusCode).toBe(400)
+  })
+
+  test("Fails with duplicate application", async function () {
+    const { rows } = await db.query(`SELECT id, company_handle FROM jobs LIMIT 1;`);
+    const { id: jobId } = rows[0];
+    const resp = await request(app)
+      .post(`/users/u1/jobs/${jobId}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.statusCode).toBe(201)
+
+
+    // duplicate application should fail
+    const resp2 = await request(app)
+      .post(`/users/u1/jobs/${jobId}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp2.statusCode).toBe(400);
+    expect(resp2.body.error.message).toBe(`You already applied for job ${jobId}`)
+  })
 });
