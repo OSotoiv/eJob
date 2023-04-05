@@ -33,14 +33,14 @@ class Job {
     static async findBy(data) {
         const { whereClause, queryValues } = sqlForFiltering(
             data,
-            {
+            {   //ignore capitalization and use symbol like//hasEquity doesnt work yet
                 title: { sql: "LOWER(title)", sym: 'LIKE' },
                 minSalary: { sql: "salary", sym: '>' },
                 hasEquity: {
                     sql: "equity",
                     sym: data.hasEquity === "true" ? '>' : 'IN',
                     val: data.hasEquity === "false" ? ['0', null] : '0'
-                }
+                }//^^^^sym is for symbol
             })
         const jobsRes = await db.query(
             `SELECT

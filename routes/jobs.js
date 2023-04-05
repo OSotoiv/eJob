@@ -31,7 +31,7 @@ router.post("/", ensureLoggedIn, isAdmin, async function (req, res, next) {
         return next(err);
     }
 });
-
+//filtering by 
 router.get("/", async function (req, res, next) {
     try {
         if (req.query.hasEquity === "false") {
